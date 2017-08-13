@@ -14,7 +14,7 @@ $ stack setup
 ```
 
 Edit haskdragon.cabal to include yesod dependency
-  	
+
 [Stack guide, addding dependencies](https://github.com/commercialhaskell/stack/blob/master/doc/GUIDE.md#adding-dependencies)
 
 
@@ -92,7 +92,7 @@ Changes to code can be seen with a quite fast process:
 
 ```
   [Ctrl-C]
-  * Main Lib> 
+  * Main Lib>
   :re
   * Main Lib> main
 ```
@@ -102,15 +102,4 @@ In this way changes can be seen without the burden of a full build.
 ### [Redis](./tutorial/Redis.md)
 
 
-
-
-### Editor
-Atom 1.19
-
-With installed plugins
-
-- Haskell Ghc Mod
-- Ide Haskell
-- Language Haskell
-
-[Atom and slack](https://github.com/atom-haskell/haskell-ghc-mod/wiki/Using-with-stack)
+### [Editor](./tutorial/Editor.md)
