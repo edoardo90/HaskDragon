@@ -7,8 +7,8 @@ With installed plugins
 - Ide Haskell
 - Language Haskell
 
+[Atom and slack](https://github.com/atom-haskell/haskell-ghc-mod/wiki/Using-with-stack)
+
 ```bash
   $ stack build ghc-mod
 ```
-
-[Atom and slack](https://github.com/atom-haskell/haskell-ghc-mod/wiki/Using-with-stack)
