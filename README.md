@@ -38,7 +38,7 @@ to try Hello world in yesod
 
 (note: I have adapted it with ```module Main where```)
 
-```
+```haskell
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TemplateHaskell       #-}
