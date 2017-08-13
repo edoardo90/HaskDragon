@@ -16,7 +16,12 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                      ,Persistence.Red
+
   build-depends:       base >= 4.7 && < 5
+                      , mtl
+                      , hedis
+                      , bytestring
   default-language:    Haskell2010
 
 executable haskdragon-exe
@@ -26,8 +31,7 @@ executable haskdragon-exe
   build-depends:       base
                      , haskdragon
                      , yesod
-                     , hedis
-                     , mtl
+
   default-language:    Haskell2010
 
 test-suite haskdragon-test
