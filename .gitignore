@@ -4,3 +4,4 @@ dump.rdb
 .aes
 .cache
 .stack-work
+redis-garbage
