@@ -5,3 +5,4 @@ dump.rdb
 .cache
 .stack-work
 redis-garbage
+*.aes
