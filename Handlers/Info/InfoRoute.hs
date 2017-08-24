@@ -1,7 +1,8 @@
 {-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies    #-}
-module Info.InfoRoute where
+
+module Handlers.Info.InfoRoute where
 
 import Yesod
 

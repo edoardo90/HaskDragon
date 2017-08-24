@@ -4,13 +4,13 @@
 {-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TemplateHaskell       #-}
 
-module Info.InfoContent
+module Handlers.Info.InfoContent
  (
-    module Info.InfoContent
-  , module Info.InfoRoute
+    module Handlers.Info.InfoContent
+  , module Handlers.Info.InfoRoute
  ) where
 
-import Info.InfoRoute
+import Handlers.Info.InfoRoute
 import Yesod
 
 getSiteInfoHomeR :: Yesod master => HandlerT SiteInfo (HandlerT master IO) Html
