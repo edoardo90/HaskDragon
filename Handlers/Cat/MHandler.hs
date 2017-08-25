@@ -6,10 +6,10 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Handlers.Map.MHandler
+module Handlers.Cat.MHandler
  (
-    module Handlers.Map.MHandler
-  , module Handlers.Map.Route
+    module Handlers.Cat.MHandler
+  , module Handlers.Cat.Route
  ) where
 
 import Yesod
@@ -17,7 +17,7 @@ import Data.Aeson
 import GHC.Generics
 
 --subsites
-import Handlers.Map.Route
+import Handlers.Cap.Route
 -- tools
 import Data.Maybe (fromMaybe)
 import qualified Data.ByteString.Lazy.Char8 as L

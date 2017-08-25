@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies    #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Handlers.Map.Route where
+module Handlers.Cat.Route where
 
 import Yesod
 
