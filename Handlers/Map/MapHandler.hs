@@ -21,15 +21,27 @@ import Handlers.Map.MapRoute
 --Model
 import Model.GameMap (Cat)
 -- tools
-import Data.Maybe (fromMaybe, fromJust, isJust)
+import Data.Maybe (fromMaybe, fromJust, isJust, isNothing)
 import qualified Data.ByteString.Lazy.Char8  as L
-import qualified Data.ByteString.Char8 as B8
+import qualified Data.ByteString as BS
 import Data.Text as T
 import qualified Persistence.Red  as Red
 import Tool.StrTools (textBase64)
 
 getGameMapHomeR :: Yesod master => HandlerT GameMap (HandlerT master IO) Value
-getGameMapHomeR = lift $ return $ object ["bischero" .= ("MAP -> tu sei bischero" :: String)]
+getGameMapHomeR = lift $
+                    do
+                      hs <- lookupHeader "team"
+                      if isJust hs then do
+                        let team = fromJust hs
+                        let team' = L.unpack $ L.fromStrict team
+                        cat' <- lift (Red.getMapJsonById team)
+                        if isNothing cat' then
+                          return $ object ["msg" .= ("sorry, no map for team: " ++ team' :: String)]
+                        else
+                          return $ object ["map" .= fromJust cat']
+                      else
+                        return $ object ["msg" .= ("please provide a valide team header" :: String)]
 
 postGameMapHomeR :: Yesod master => HandlerT GameMap (HandlerT master IO) Value
 postGameMapHomeR = lift $
@@ -38,12 +50,12 @@ postGameMapHomeR = lift $
                         if isJust hs then do
                           let team = fromJust hs
                           cat <- requireJsonBody :: HandlerT master IO Cat
-                          _ <- lift (Red.saveJsonWithId team cat)
-                          return $ object ["bischero" .= B8.unpack team,
+                          _ <- lift ( Red.saveJsonWithId team cat)
+                          return $ object ["team" .=  (L.unpack $ L.fromStrict team :: String),
                                            "cat:" .= cat
                                           ]
                         else
-                          return $ object ["bischero" .= ("provide team header specifying your team" :: String)]
+                          return $ object ["msg" .= ("provide team header specifying your team" :: String)]
 
 instance Yesod master => YesodSubDispatch GameMap (HandlerT master IO) where
   yesodSubDispatch = $(mkYesodSubDispatch resourcesGameMap)

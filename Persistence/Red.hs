@@ -2,13 +2,19 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeFamilies          #-}
 
-module Persistence.Red (getValues, getValue, getGameMapById, saveJsonWithId) where
+module Persistence.Red (getValues,
+                        getValue,
+                        getGameMapById,
+                        saveJsonWithId,
+                        getMapJsonById) where
 import qualified Database.Redis as DB
 import Control.Monad.Trans
+import Data.Maybe (fromJust, fromMaybe)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 
 import Data.Aeson
+import Model.GameMap (Cat)
 
 main :: IO ()
 main = print "hello"
@@ -39,6 +45,16 @@ getGameMapById k = do
   DB.runRedis conn $ do
     value <- DB.hget "games" k
     liftIO $ return (eitherToMaybe value)
+
+getMapJsonById :: BS.ByteString -> IO (Maybe Cat)
+getMapJsonById id = do
+  conn <- DB.connect DB.defaultConnectInfo
+  DB.runRedis conn $ do
+   cat' <- DB.hget "games" id
+   let cat'' = LBS.fromStrict <$>  eitherToMaybe cat'
+   let cat = fromMaybe "" cat''
+   let maybeJson = decode cat :: Maybe Cat
+   return maybeJson
 
 
 saveJsonWithId :: ToJSON a => BS.ByteString -> a -> IO ()
