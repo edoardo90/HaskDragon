@@ -7,10 +7,10 @@ module Handlers.Cat.Route where
 
 import Yesod
 
-data GameMap = GameMap
+data GameCat = GameCat
 
-mkYesodSubData "GameMap" [parseRoutes|
-/            GameMapHomeR GET
+mkYesodSubData "GameCat" [parseRoutes|
+/            GameCatHomeR GET
 /people      PersonR GET POST
 /cat         CatR POST
 /cat-person  CatPersonR POST

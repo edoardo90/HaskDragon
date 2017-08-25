@@ -6,13 +6,14 @@
 
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE DeriveGeneric #-}
-module Application (main) where
+module Application (main, App) where
 
 import           Yesod
 
 --routes:
 import Handlers.Info.InfoContent
-import Handlers.Map.MHandler
+import Handlers.Cat.MHandler
+import Handlers.Map.MapHandler
 
 --persistence
 import qualified Persistence.Red as Red
@@ -22,8 +23,7 @@ import qualified Tool.StrTools as Str
 import Data.Aeson
 import GHC.Generics
 
-data App = App { getSiteInfo :: SiteInfo, getGameMap :: GameMap }
-
+data App = App { getSiteInfo :: SiteInfo, getGameCat :: GameCat, getGameMap :: GameMap }
 
 data PPerson = PPerson
   {
@@ -37,8 +37,6 @@ instance ToJSON PPerson where
 instance FromJSON PPerson
 
 
-
-
 -- data HelloWorld = HelloWorld
 
 mkYesod "App" [parseRoutes|
@@ -46,7 +44,8 @@ mkYesod "App" [parseRoutes|
 /page1 Page1R GET POST
 /page2 Page2R GET
 /info SiteInfoR SiteInfo getSiteInfo
-/map GameMapR  GameMap  getGameMap
+/cat  GameCatR  GameCat  getGameCat
+/map  GameMapR  GameMap  getGameMap
 |]
 
 instance Yesod App
@@ -74,4 +73,4 @@ getPage2R = do
 
 
 main :: IO ()
-main = warp 3000 $ App SiteInfo GameMap
+main = warp 3000 $ App SiteInfo GameCat GameMap

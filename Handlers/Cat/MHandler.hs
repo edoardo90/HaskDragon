@@ -17,11 +17,12 @@ import Data.Aeson
 import GHC.Generics
 
 --subsites
-import Handlers.Cap.Route
+import Handlers.Cat.Route
 -- tools
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust, isNothing, fromJust)
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Data.Text                  (Text)
+import  Data.Text.Lazy.Encoding as DLE
 
 
 --persistence
@@ -80,55 +81,49 @@ john = CatPerson "John" 20 myCat
 
 gino = Person "gino" 10
 
--- / GameMapHomeR GET in Route
+-- / GameCatHomeR GET in Route
 
-getGameMapHomeR :: Yesod master => HandlerT GameMap (HandlerT master IO) Value
-getGameMapHomeR =   lift $
+getGameCatHomeR :: Yesod master => HandlerT GameCat (HandlerT master IO) Value
+getGameCatHomeR =   lift $
                           do
                           idValueMaybe <- lookupGetParam "game"
-                          let gameId = Str.maybeToStr idValueMaybe
-                          if null gameId
+                          if isNothing idValueMaybe
                              then
                                 return $ object ["msg" .= ("please provide game parameter"::String)]
-                             else do
-                                gameValue' <- lift $ Red.getGameMapById gameId
-                                let gameValue = fromMaybe "" gameValue'  :: String
-                                return $ object ["msg" .=  gameValue]
+                             else
+                                return $ object ["msg" .=  ("ciaone" :: String)]
 
-getPersonR :: Yesod master => HandlerT GameMap (HandlerT master IO) Value
+getPersonR :: Yesod master => HandlerT GameCat (HandlerT master IO) Value
 getPersonR = lift getPersonR'
 
 getPersonR' :: HandlerT master IO Value
 getPersonR' = return $ object ["bischero" .= ("tu sei bischero" :: String)]
 
-postPersonR :: Yesod master => HandlerT GameMap (HandlerT master IO) Html
+postPersonR :: Yesod master => HandlerT GameCat (HandlerT master IO) Html
 postPersonR =  lift postPersonR'
 
 postPersonR' :: Yesod master => HandlerT master IO Html
 postPersonR' = do p <- requireJsonBody :: HandlerT master IO Person
                   defaultLayout [whamlet|Nice - post|]
 
-postCatR :: Yesod master => HandlerT GameMap (HandlerT master IO) Html
+postCatR :: Yesod master => HandlerT GameCat (HandlerT master IO) Html
 postCatR =  lift $
                 do p <- requireJsonBody :: HandlerT master IO Cat
                    defaultLayout [whamlet|Nice - cat post|]
 
-postCatPersonR :: Yesod master => HandlerT GameMap (HandlerT master IO) Html
+postCatPersonR :: Yesod master => HandlerT GameCat (HandlerT master IO) Html
 postCatPersonR =  lift $
                      do p <- requireJsonBody :: HandlerT master IO CatPerson
                         defaultLayout [whamlet|Nice - cat Person - post|]
 
--- lift $
---                 do post <- (requireJsonBody :: Handler Person)
---                    return $ object ["msg" .=  ("nice post" :: String)]
-
 printP :: IO ()
 printP = L.putStrLn $ encode john
 
-pgin = L.putStrLn $ encode gino
+pgin :: L.ByteString
+pgin = encode gino
 
 f = decode "{\"name\":\"Joe\",\"age\":12}" :: Maybe Person
 
 
-instance Yesod master => YesodSubDispatch GameMap (HandlerT master IO) where
-  yesodSubDispatch = $(mkYesodSubDispatch resourcesGameMap)
+instance Yesod master => YesodSubDispatch GameCat (HandlerT master IO) where
+  yesodSubDispatch = $(mkYesodSubDispatch resourcesGameCat)
