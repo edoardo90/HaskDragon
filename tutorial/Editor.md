@@ -12,3 +12,5 @@ With installed plugins
 ```bash
   $ stack build ghc-mod
 ```
+
+![My Atom Configuration](./img/atom-hs-plugins.png)
