@@ -2,80 +2,81 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeFamilies          #-}
 
-module Persistence.Red (getValues,
-                        getValue,
-                        getGameMapById,
-                        saveJsonWithId,
+module Persistence.Red (saveJsonMap,
+                        saveJsonPlayer,
                         getMapJsonById) where
 import qualified Database.Redis as DB
 import Control.Monad.Trans
-import Data.Maybe (fromJust, fromMaybe)
+import Data.Maybe (fromJust, fromMaybe, isNothing, isJust)
+import Data.Either (isRight, isLeft)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString.Char8 as BS8
 
 import Data.Aeson
-import Model.GameMap (Cat)
+import Model.GameMap (Map, Board)
+import Model.PlayerInfo (Player, newPlayer)
 
 main :: IO ()
 main = print "hello"
 
 type ID = BS.ByteString
 
-getValues :: BS.ByteString -> BS.ByteString -> IO (Maybe (BS.ByteString, BS.ByteString))
-getValues k1 k2 = do
-    conn <- DB.connect DB.defaultConnectInfo
-    DB.runRedis conn $ do
-        DB.set "foo" "123"
-        DB.set "bar" "456"
-        foo <- DB.get k1
-        bar <- DB.get k2
-        liftIO $ return $ toMaybeCouple $ coupleF eitherToMaybe (foo, bar)
+getMapJsonById :: BS.ByteString -> IO (Maybe Board)
+getMapJsonById id = connectRedisAnd (getMapJsonById' id)
 
-getValue :: BS.ByteString -> IO (Maybe BS.ByteString)
-getValue k = do
-  conn <- DB.connect DB.defaultConnectInfo
-  DB.runRedis conn $ do
-    value <- DB.get k
-    liftIO $ return (eitherToMaybe value)
-
-
-getGameMapById :: BS.ByteString -> IO (Maybe BS.ByteString)
-getGameMapById k = do
-  conn <- DB.connect DB.defaultConnectInfo
-  DB.runRedis conn $ do
-    value <- DB.hget "games" k
-    liftIO $ return (eitherToMaybe value)
-
-getMapJsonById :: BS.ByteString -> IO (Maybe Cat)
-getMapJsonById id = do
-  conn <- DB.connect DB.defaultConnectInfo
-  DB.runRedis conn $ do
-   cat' <- DB.hget "games" id
-   let cat'' = LBS.fromStrict <$>  eitherToMaybe cat'
-   let cat = fromMaybe "" cat''
-   let maybeJson = decode cat :: Maybe Cat
+getMapJsonById' id conn =
+ DB.runRedis conn $ do
+   map' <- DB.hget "games" id
+   let map'' = LBS.fromStrict <$>  eitherToMaybe map'
+   let map = fromMaybe "" map''
+   let maybeJson = decode map :: Maybe Board
    return maybeJson
 
+getPlayerById :: ID -> ID -> IO (Maybe Player)
+getPlayerById team playerId = connectRedisAnd (getPlayerById' team playerId)
 
-saveJsonWithId :: ToJSON a => BS.ByteString -> a -> IO ()
-saveJsonWithId id obj = do
-  conn <- DB.connect DB.defaultConnectInfo
+getPlayerById' team playerId conn =
   DB.runRedis conn $ do
-   let str = lazyToStrictBS $ encode obj
-   DB.hset "games" id str
-   return ()
+   player' <- DB.hget (getPlayerTeam team) playerId
+   let player'' = LBS.fromStrict <$>  eitherToMaybe player'
+   let player = fromMaybe "" player''
+   let maybeJson = decode player :: Maybe Player
+   return maybeJson
+
+saveJsonWithId :: ToJSON a => BS.ByteString -> BS.ByteString -> a -> IO (Maybe a)
+saveJsonWithId hashId objectId obj = connectRedisAnd (saveJsonWithId' hashId objectId obj)
+
+saveJsonWithId' hashId objectId obj conn =
+    DB.runRedis conn $ do
+      let encodedObj = lazyToStrictBS $ encode obj
+      alreadyPresent <- DB.hget hashId objectId
+      if isJust $ eitherToMaybe alreadyPresent then
+        return Nothing
+      else do
+        DB.hset hashId objectId encodedObj
+        return (Just obj)
+
+saveJsonMap :: ToJSON a => BS.ByteString -> a -> IO (Maybe a)
+saveJsonMap objectId object = saveJsonWithId "games" objectId object
+
+saveJsonPlayer :: ToJSON a => BS.ByteString -> BS.ByteString -> a -> IO (Maybe a)
+saveJsonPlayer team playerId player = saveJsonWithId (getPlayerTeam team) playerId player
+
+connectRedisAnd :: (DB.Connection -> IO (Maybe a)) -> IO (Maybe a)
+connectRedisAnd action = do
+  conn <- DB.connect DB.defaultConnectInfo
+  connAlive <- DB.runRedis conn DB.ping
+  if isLeft connAlive then
+    return Nothing
+  else
+    action conn
+
+getPlayerTeam team = (BS.append "players-" team)
 
 lazyToStrictBS :: LBS.ByteString -> BS.ByteString
 lazyToStrictBS x = BS.concat $ LBS.toChunks x
 
-
 eitherToMaybe :: Either a (Maybe b) -> Maybe b
 eitherToMaybe (Right (Just x)) = Just x
 eitherToMaybe _ = Nothing
-
-coupleF :: (a -> b) -> (a,a) -> (b,b)
-coupleF f (a, a') = (f a, f a')
-
-toMaybeCouple :: (Maybe BS.ByteString, Maybe BS.ByteString) -> Maybe (BS.ByteString, BS.ByteString)
-toMaybeCouple (Just bs1, Just bs2) = Just (bs1, bs2)
-toMaybeCouple _ = Nothing

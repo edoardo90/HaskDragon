@@ -19,7 +19,7 @@ import GHC.Generics
 --subsites
 import Handlers.Map.MapRoute
 --Model
-import Model.GameMap (Cat)
+import Model.GameMap (Map, Board, boardToBBound)
 -- tools
 import Data.Maybe (fromMaybe, fromJust, isJust, isNothing)
 import qualified Data.ByteString.Lazy.Char8  as L
@@ -35,11 +35,11 @@ getGameMapHomeR = lift $
                       if isJust hs then do
                         let team = fromJust hs
                         let team' = L.unpack $ L.fromStrict team
-                        cat' <- lift (Red.getMapJsonById team)
-                        if isNothing cat' then
+                        gmap' <- lift (Red.getMapJsonById team)
+                        if isNothing gmap' then
                           return $ object ["msg" .= ("sorry, no map for team: " ++ team' :: String)]
                         else
-                          return $ object ["map" .= fromJust cat']
+                          return $ object ["map" .= fromJust gmap']
                       else
                         return $ object ["msg" .= ("please provide a valide team header" :: String)]
 
@@ -49,10 +49,11 @@ postGameMapHomeR = lift $
                         hs <- lookupHeader "team"
                         if isJust hs then do
                           let team = fromJust hs
-                          cat <- requireJsonBody :: HandlerT master IO Cat
-                          _ <- lift ( Red.saveJsonWithId team cat)
+                          gMap <- requireJsonBody :: HandlerT master IO Board
+                          let gMapBounded = boardToBBound gMap
+                          _ <- lift ( Red.saveJsonMap team gMapBounded)
                           return $ object ["team" .=  (L.unpack $ L.fromStrict team :: String),
-                                           "cat:" .= cat
+                                           "map-saved" .= gMapBounded
                                           ]
                         else
                           return $ object ["msg" .= ("provide team header specifying your team" :: String)]

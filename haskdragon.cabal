@@ -20,11 +20,11 @@ library
                      , Application
                      , Handlers.Info.InfoContent
                      , Handlers.Info.InfoRoute
-                     , Handlers.Cat.MHandler
-                     , Handlers.Cat.Route
                      , Handlers.Map.MapHandler
                      , Handlers.Map.MapRoute
                      , Model.GameMap
+                     , Handlers.Player.PlayerHandler
+                     , Handlers.Player.PlayerRoute
 
   build-depends:       base >= 4.7 && < 5
                       , mtl
@@ -34,6 +34,7 @@ library
                       , yesod
                       , aeson
                       , base64-bytestring
+                      , http-types
   default-language:    Haskell2010
 
 executable haskdragon-exe
@@ -46,7 +47,7 @@ executable haskdragon-exe
                      , bytestring
                      , text
                      , aeson
-
+                     , http-types
   default-language:    Haskell2010
 
 test-suite haskdragon-test

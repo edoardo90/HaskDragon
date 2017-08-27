@@ -9,11 +9,12 @@
 module Application (main, App) where
 
 import           Yesod
+import Network.HTTP.Types (status201, status204)
 
 --routes:
 import Handlers.Info.InfoContent
-import Handlers.Cat.MHandler
 import Handlers.Map.MapHandler
+import Handlers.Player.PlayerHandler
 
 --persistence
 import qualified Persistence.Red as Red
@@ -23,29 +24,20 @@ import qualified Tool.StrTools as Str
 import Data.Aeson
 import GHC.Generics
 
-data App = App { getSiteInfo :: SiteInfo, getGameCat :: GameCat, getGameMap :: GameMap }
-
-data PPerson = PPerson
-  {
-      name :: String
-    , age ::  Int
-  } deriving (Generic, Show)
-
-instance ToJSON PPerson where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON PPerson
+--Model
+import Model.PlayerInfo
+--tools
+import Data.Text
 
 
--- data HelloWorld = HelloWorld
+data App = App { getSiteInfo :: SiteInfo, getGameMap :: GameMap, getGamePlayer :: GamePlayer }
 
 mkYesod "App" [parseRoutes|
-/ HomeR GET
-/page1 Page1R GET POST
-/page2 Page2R GET
-/info SiteInfoR SiteInfo getSiteInfo
-/cat  GameCatR  GameCat  getGameCat
-/map  GameMapR  GameMap  getGameMap
+/       HomeR GET
+/todo   TodoR POST
+/info   SiteInfoR      SiteInfo    getSiteInfo
+/map    GameMapR       GameMap     getGameMap
+/player GamePlayerR    GamePlayer  getGamePlayer
 |]
 
 instance Yesod App
@@ -53,24 +45,13 @@ instance Yesod App
 getHomeR :: Handler Html
 getHomeR =  defaultLayout
   [whamlet|
-      <a href=@{Page1R}> Go to page 1 </a>
+      Ciaone
   |]
 
-getPage1R :: Handler Html
-getPage1R =  defaultLayout [whamlet|Hello -....- World!|]
-
-postPage1R :: Handler Html
-postPage1R = do p <- requireJsonBody :: Handler PPerson
-                defaultLayout [whamlet|Nice - post|]
-
-getPage2R :: HandlerT App IO Value
-getPage2R = do
-              idValueMaybe <- lookupGetParam "id"
-              c <- lift $ Red.getValues "foo" "bar"
-              return $ object ["msg" .= Str.coupleToString c,
-                               "also" .= Str.maybeToStr idValueMaybe ]
-
-
+postTodoR :: Handler Value
+postTodoR = do
+    t  <- requireJsonBody :: Handler Player
+    sendResponseStatus status201  $ object ["added" .= t]
 
 main :: IO ()
-main = warp 3000 $ App SiteInfo GameCat GameMap
+main = warp 3000 $ App SiteInfo GameMap GamePlayer
