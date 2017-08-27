@@ -2,6 +2,16 @@
 
 Aim of this Repository is getting to understand some Yesod: a web framework for Haskell language
 
+### Try this web app:
+- Install Stack
+```bash
+git clone <this url>
+cd <repo-directory>
+stack setup
+stack build
+stack exec haskdragon-exe
+```
+
 
 ### [Stack Setup](./tutorial/Stack.md)
 Setting up project with Stack

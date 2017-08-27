@@ -2,7 +2,7 @@ name:                haskdragon
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/haskdragon#readme
+homepage:            https://github.com/edoardo90/YesodExperiments
 license:             BSD3
 license-file:        LICENSE
 author:              Author name here
@@ -22,9 +22,10 @@ library
                      , Handlers.Info.InfoRoute
                      , Handlers.Map.MapHandler
                      , Handlers.Map.MapRoute
-                     , Model.GameMap
                      , Handlers.Player.PlayerHandler
-                     , Handlers.Player.PlayerRoute
+                     , Handlers.Player.PlayerRoute                     
+                     , Model.GameMap
+                     , Model.PlayerInfo
 
   build-depends:       base >= 4.7 && < 5
                       , mtl
