@@ -38,6 +38,7 @@ getMapJsonById' id conn =
 getPlayerById :: ID -> ID -> IO (Maybe Player)
 getPlayerById team playerId = connectRedisAnd (getPlayerById' team playerId)
 
+getPlayerById' :: ID -> ID -> DB.Connection -> IO (Maybe Player)
 getPlayerById' team playerId conn =
   DB.runRedis conn $ do
    player' <- DB.hget (getPlayerTeam team) playerId
@@ -65,6 +66,14 @@ saveJsonMap objectId object = saveJsonWithId "games" objectId object
 saveJsonPlayer :: ToJSON a => BS.ByteString -> BS.ByteString -> a -> IO (Maybe a)
 saveJsonPlayer team playerId player = saveJsonWithId (getPlayerTeam team) playerId player
 
+addSphereToPlayer :: ID -> ID -> IO (Maybe Player)
+addSphereToPlayer playerName team = connectRedisAnd (addSphereToPlayer' playerName team)
+
+addSphereToPlayer' :: ID -> ID -> DB.Connection -> IO (Maybe Player)
+addSphereToPlayer' playerName team conn = do
+  p <- getPlayerById' team playerName conn  
+  return p
+
 connectRedisAnd :: (DB.Connection -> IO (Maybe a)) -> IO (Maybe a)
 connectRedisAnd action = do
   conn <- DB.connect DB.defaultConnectInfo
@@ -74,7 +83,7 @@ connectRedisAnd action = do
   else
     action conn
 
-getPlayerTeam team = (BS.append "players-" team)
+getPlayerTeam team = BS.append "players-" team
 
 lazyToStrictBS :: LBS.ByteString -> BS.ByteString
 lazyToStrictBS x = BS.concat $ LBS.toChunks x

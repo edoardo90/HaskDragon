@@ -49,6 +49,7 @@ postGamePlayerCollectR playerName sphereId = lift $ readTeamAnd (collectSphere' 
 collectSphere' ::  Yesod master => PlayerName -> BS.ByteString ->  (HandlerT master IO) Value
 collectSphere' playerName team = do
   m <- lift $ Red.getMapJsonById team
+  -- lift $ Red.addSphereToPlayer playerName team
   p <- getGamePlayer' playerName team
   if isNothing m then
     return $ object ["msg" .= (" no map found for specified team" :: String)]
