@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Model.PlayerInfo (Player, newPlayer) where
+module Model.PlayerInfo (Player(..), newPlayer) where
 
 import Model.GameMap
 

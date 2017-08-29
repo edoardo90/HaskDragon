@@ -4,7 +4,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Model.GameMap (Item, Map, Board, BoardBound, boardToBBound ) where
+module Model.GameMap (Item, Map(..), Board(..), BoardBound, boardToBBound ) where
 
 import Yesod
 import Data.Aeson

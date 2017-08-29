@@ -2,9 +2,11 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TypeFamilies          #-}
 
-module Persistence.Red (saveJsonMap,
-                        saveJsonPlayer,
-                        getMapJsonById) where
+module Persistence.Red (  saveJsonMap
+                        , saveJsonPlayer
+                        , getMapJsonById
+                        , getPlayerById
+                        ) where
 import qualified Database.Redis as DB
 import Control.Monad.Trans
 import Data.Maybe (fromJust, fromMaybe, isNothing, isJust)

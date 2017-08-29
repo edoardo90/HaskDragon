@@ -16,29 +16,20 @@ import Network.HTTP.Types (status201, status204, status409)
 --subsites
 import Handlers.Player.PlayerRoute
 --Model
-import Model.GameMap (Map, Board, boardToBBound)
-import Model.PlayerInfo (Player, newPlayer)
+import Model.GameMap (Map(..), Board(..), boardToBBound)
+import Model.PlayerInfo (Player(..), newPlayer)
 
 -- tools
 import Data.Maybe (fromMaybe, fromJust, isJust, isNothing)
 import qualified Data.ByteString.Lazy.Char8  as L8
 import qualified Data.ByteString as BS
-import Data.Text as T
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Persistence.Red  as Red
 import Tool.StrTools (textBase64)
 
-postGamePlayerHomeR' :: Yesod master => PlayerName -> HandlerT GamePlayer (HandlerT master IO) Value
-postGamePlayerHomeR' playerName = lift $
-  do
-    teamHeader <- lookupHeader "team"
-    if isNothing teamHeader then
-      return $ object ["msg" .= ("Please provide team in header" :: String)]
-    else
-      createAndSavePlayer (fromJust teamHeader) playerName
-
 postGamePlayerHomeR :: Yesod master => PlayerName -> HandlerT GamePlayer (HandlerT master IO) Value
-postGamePlayerHomeR playerName = readHeaderAndDo ( `createAndSavePlayer` playerName)
+postGamePlayerHomeR playerName = lift $ readTeamAnd ( `createAndSavePlayer` playerName )
 
 createAndSavePlayer :: Yesod master => BS.ByteString -> PlayerName ->  (HandlerT master IO) Value
 createAndSavePlayer teamHeader playerName =
@@ -53,11 +44,30 @@ createAndSavePlayer teamHeader playerName =
 
 
 postGamePlayerCollectR :: Yesod master => PlayerName -> SphereId -> HandlerT GamePlayer (HandlerT master IO) Value
-postGamePlayerCollectR playerName sphereId = lift $
-  do
-    --p <- Red.getPlayerById
-    return $ object ["msg" .= (" ciccio " :: String)]
---
+postGamePlayerCollectR playerName sphereId = lift $ readTeamAnd (collectSphere' playerName)
+
+collectSphere' ::  Yesod master => PlayerName -> BS.ByteString ->  (HandlerT master IO) Value
+collectSphere' playerName team = do
+  m <- lift $ Red.getMapJsonById team
+  p <- getGamePlayer' playerName team
+  if isNothing m then
+    return $ object ["msg" .= (" no map found for specified team" :: String)]
+  else
+    if isNothing p then
+      return $ object ["msg" .= ("no player with such name" :: String)]
+    else do
+      let (Board (Map gameSpheres) time) = fromJust m
+      let (Player name playerSpheres) = fromJust p
+      let toGo = length gameSpheres - length playerSpheres
+      let msg = if toGo == 0 then "Good, you found all of them" else "Still " ++ show toGo ++ " to go!"
+      return $ object ["status" .= msg,
+                       "missingSpheres" .= toGo,
+                       "spheres" .= playerSpheres]
+
+getGamePlayer' ::  Yesod master => PlayerName -> BS.ByteString ->  (HandlerT master IO) (Maybe Player)
+getGamePlayer' playerName team = lift $ Red.getPlayerById team (TE.encodeUtf8 playerName)
+
+
 -- /:playerName/collect/:sphereId
 --
 --   var game = persistence.getCurrentMap();
@@ -71,9 +81,8 @@ postGamePlayerCollectR playerName sphereId = lift $
 --     status : " 5 to go"
 --  }
 
-
-readHeaderAndDo :: (MonadHandler m, MonadTrans t) => (BS.ByteString -> m Value) -> t m Value
-readHeaderAndDo f = lift $
+readTeamAnd :: MonadHandler m => (BS.ByteString -> m Value) -> m Value
+readTeamAnd f =
   do
     teamHeader <- lookupHeader "team"
     if isNothing teamHeader then
