@@ -3,6 +3,23 @@
 Aim of this Repository is getting to understand some Yesod: a web framework for Haskell language
 
 ### Try this web app:
+
+- Install Redis
+
+  - Unix: [official website](https://redis.io/)
+
+
+  - OXS: [medium post](https://medium.com/@petehouston/install-and-config-redis-on-mac-os-x-via-homebrew-eb8df9a4f298)
+  - Windows: [win-porting](https://github.com/ServiceStack/redis-windows)
+
+- Run redis-server
+
+```bash
+redis-server
+```
+
+
+
 - Install Stack
 ```bash
 git clone <this url>
@@ -13,7 +30,9 @@ stack exec haskdragon-exe
 ```
 
 
+
 ### [Stack Setup](./tutorial/Stack.md)
+
 Setting up project with Stack
 
 ### [Redis](./tutorial/Redis.md)
