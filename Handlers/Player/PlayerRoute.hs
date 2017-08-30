@@ -16,5 +16,6 @@ type SphereId = Int
 
 mkYesodSubData "GamePlayer" [parseRoutes|
 /#PlayerName/join               GamePlayerHomeR    POST
-/#PlayerName/collect/#SphereId  GamePlayerCollectR POST 
+/#PlayerName                    GamePlayerInfoR    GET
+/#PlayerName/collect/#SphereId  GamePlayerCollectR POST
 |]
