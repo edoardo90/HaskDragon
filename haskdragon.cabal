@@ -23,7 +23,7 @@ library
                      , Handlers.Map.MapHandler
                      , Handlers.Map.MapRoute
                      , Handlers.Player.PlayerHandler
-                     , Handlers.Player.PlayerRoute                     
+                     , Handlers.Player.PlayerRoute
                      , Model.GameMap
                      , Model.PlayerInfo
 
@@ -36,6 +36,7 @@ library
                       , aeson
                       , base64-bytestring
                       , http-types
+                      , lens
   default-language:    Haskell2010
 
 executable haskdragon-exe

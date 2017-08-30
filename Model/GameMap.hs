@@ -4,7 +4,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Model.GameMap (Item, Map(..), Board(..), BoardBound, boardToBBound ) where
+module Model.GameMap (Item(..), Map(..), Board(..),  BoardBound, boardToBBound ) where
 
 import Yesod
 import Data.Aeson
@@ -24,6 +24,10 @@ import           Data.Text                  (Text)
 import qualified Tool.StrTools as Str
 
 data Item = Item {id :: Int, latitude :: Double, longitude :: Double} deriving (Show)
+
+instance Eq Item where
+  Item idA _ _ == Item idB _ _ = idA == idB
+
 newtype Map = Map {spheres:: [Item]} deriving (Show)
 
 data Board = Board {map :: Map, time :: Time} deriving (Generic, Show)

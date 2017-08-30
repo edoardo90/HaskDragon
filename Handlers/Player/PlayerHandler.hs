@@ -16,12 +16,13 @@ import Network.HTTP.Types (status201, status204, status409)
 --subsites
 import Handlers.Player.PlayerRoute
 --Model
-import Model.GameMap (Map(..), Board(..), boardToBBound)
-import Model.PlayerInfo (Player(..), newPlayer)
+import Model.GameMap (Map(..), Board(..), Item(..), boardToBBound)
+import Model.PlayerInfo (Player(..), newPlayer, addItemToPlayer)
 
 -- tools
 import Data.Maybe (fromMaybe, fromJust, isJust, isNothing)
 import qualified Data.ByteString.Lazy.Char8  as L8
+import qualified Data.ByteString.Char8  as BS8
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -44,12 +45,11 @@ createAndSavePlayer teamHeader playerName =
 
 
 postGamePlayerCollectR :: Yesod master => PlayerName -> SphereId -> HandlerT GamePlayer (HandlerT master IO) Value
-postGamePlayerCollectR playerName sphereId = lift $ readTeamAnd (collectSphere' playerName)
+postGamePlayerCollectR playerName sphereId = lift $ readTeamAnd (collectSphere' sphereId playerName)
 
-collectSphere' ::  Yesod master => PlayerName -> BS.ByteString ->  (HandlerT master IO) Value
-collectSphere' playerName team = do
+collectSphere' ::  Yesod master => SphereId -> PlayerName -> BS.ByteString  -> (HandlerT master IO) Value
+collectSphere' sphereId playerName team = do
   m <- lift $ Red.getMapJsonById team
-  -- lift $ Red.addSphereToPlayer playerName team
   p <- getGamePlayer' playerName team
   if isNothing m then
     return $ object ["msg" .= (" no map found for specified team" :: String)]
@@ -58,12 +58,19 @@ collectSphere' playerName team = do
       return $ object ["msg" .= ("no player with such name" :: String)]
     else do
       let (Board (Map gameSpheres) time) = fromJust m
-      let (Player name playerSpheres) = fromJust p
-      let toGo = length gameSpheres - length playerSpheres
-      let msg = if toGo == 0 then "Good, you found all of them" else "Still " ++ show toGo ++ " to go!"
-      return $ object ["status" .= msg,
-                       "missingSpheres" .= toGo,
-                       "spheres" .= playerSpheres]
+      let player@(Player name playerSpheres) = fromJust p
+      let foundSpheres = filter (\s -> Model.GameMap.id s == sphereId) gameSpheres
+      let playerWithNewSphere =  foldr addItemToPlayer player foundSpheres
+      savedPlayer <- liftIO $ Red.updateJsonPlayer team (BS8.pack name) playerWithNewSphere
+      if isNothing savedPlayer then return $ object ["msg" .= ("player was not correctly saved" :: String)] else do
+        let toGo = length gameSpheres - (length . _spheres . fromJust)  savedPlayer
+        let msg = if toGo == 0 then "Good, you found all of them" else "Still " ++ show toGo ++ " to go!"
+        return $ object ["status" .= msg
+                         , "missingSpheres" .= toGo
+                         , "spheres" .=   _spheres (fromJust savedPlayer)
+                         , "playerNow" .= fromMaybe (object ["msg:" .= ("hmm?" :: String)]) (toJSON <$> savedPlayer)
+                         ]
+
 
 getGamePlayer' ::  Yesod master => PlayerName -> BS.ByteString ->  (HandlerT master IO) (Maybe Player)
 getGamePlayer' playerName team = lift $ Red.getPlayerById team (TE.encodeUtf8 playerName)
