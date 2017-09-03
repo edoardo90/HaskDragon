@@ -7,3 +7,6 @@ dump.rdb
 redis-garbage
 *.aes
 .idea
+node_modules
+automation/docker-setup
+
