@@ -128,12 +128,20 @@ function postBuild(instsallDir){
   });
 }
 
+function sshUploadBin(installDir) {
+
+}
+
+function createDocker(){
+// cp ../../.stack-work/install/x86_64-linux/ghc-8.0.1/8.0.1/bin/haskdragon-exe .
+// ADD ./haskdragon-exe /app  
+}
 
 
 preBuild()
-   .then(build)
-   .then(postBuild)
-
+  // .then(build)
+  // .then(postBuild)
+  .then(sshUploadBin);
 
 
 //
