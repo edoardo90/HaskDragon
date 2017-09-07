@@ -53,7 +53,7 @@ postTodoR = do
     t  <- requireJsonBody :: Handler Player
     sendResponseStatus status201  $ object ["added" .= t]
 
-ff x =  x + 1 + 333
+ff x =  x + 1
 
 main :: IO ()
 main = warp 3000 $ App SiteInfo GameMap GamePlayer

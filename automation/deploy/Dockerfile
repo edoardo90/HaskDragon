@@ -18,8 +18,9 @@ RUN DEBIAN_FRONTEND=noninteractive                    \
     && apt-get clean                                  \
     && rm -rf /var/lib/apt/lists/*                    \
 
-# Make port 80 available to the world outside this container
+# Make ports 3000 and 6379 (redis) available to the world outside this container
 EXPOSE 3000
+EXPOSE 6379	
 
 
 # Run haskdragon-exe when the container launches
