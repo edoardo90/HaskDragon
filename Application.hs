@@ -8,6 +8,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Application (main, App) where
 
+import System.Process
+
 import           Yesod
 import Network.HTTP.Types (status201, status204)
 
@@ -34,7 +36,7 @@ data App = App { getSiteInfo :: SiteInfo, getGameMap :: GameMap, getGamePlayer :
 
 mkYesod "App" [parseRoutes|
 /       HomeR GET
-/todo   TodoR POST
+/host   HostR GET
 /info   SiteInfoR      SiteInfo    getSiteInfo
 /map    GameMapR       GameMap     getGameMap
 /player GamePlayerR    GamePlayer  getGamePlayer
@@ -45,15 +47,16 @@ instance Yesod App
 getHomeR :: Handler Html
 getHomeR =  defaultLayout
   [whamlet|
-      Ciaone
+      Hello - - - |  **  |  **  | - - -
   |]
 
-postTodoR :: Handler Value
-postTodoR = do
-    t  <- requireJsonBody :: Handler Player
-    sendResponseStatus status201  $ object ["added" .= t]
+getHostR :: Handler Value
+getHostR = do
+  hostname' <- liftIO hostname
+  return $ object ["msg" .= hostname']
 
-ff x =  x + 1
+hostname :: IO String
+hostname = readProcess "hostname" [] ""
 
 main :: IO ()
 main = warp 3000 $ App SiteInfo GameMap GamePlayer

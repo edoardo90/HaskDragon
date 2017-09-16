@@ -4,9 +4,10 @@ FROM debian:latest
 # Set the working directory to /app
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy the binary haskdragon-exe into the container at /app
 ADD ./haskdragon-exe /app
 
+# install the minimum libraries the bin will need to run
 RUN DEBIAN_FRONTEND=noninteractive                    \
     apt-get -q -y update                              \
     && apt-get                                        \
@@ -16,11 +17,10 @@ RUN DEBIAN_FRONTEND=noninteractive                    \
       libgmp10                                        \
     && apt-get install --reinstall libffi6            \
     && apt-get clean                                  \
-    && rm -rf /var/lib/apt/lists/*                    \
+    && rm -rf /var/lib/apt/lists/*
 
-# Make ports 3000 and 6379 (redis) available to the world outside this container
+# Make ports 3000 available to the world outside this container
 EXPOSE 3000
-EXPOSE 6379	
 
 
 # Run haskdragon-exe when the container launches

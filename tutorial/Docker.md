@@ -1,4 +1,4 @@
-# Aim 
+# Aim
 
 Aim of this page is to give a basic explanation on how is possible to build this project using docker
 
@@ -8,9 +8,10 @@ Most of what I've done is inspired to mgreenly work
 
 https://github.com/mgreenly/dockerimages
 
-### Creation of a Docker image to build 
+### Creation of a Docker image to build
 
-In `deploy/docker-stack-builder` is present a Dockerfile from which is possible to create a docker image, based on debian, that contains a working installation of stack and ghc. This image can be used to build the project
+In `deploy/docker-stack-builder` is present a Dockerfile from which is possible to create a docker image, based on debian, that contains a working installation of stack and ghc. This image can be used to build the project.
+Let us call **project directory** the one containing  **Application.hs**, the root of this repository.
 
 From **project directory**
 
@@ -23,16 +24,17 @@ docker build -t debian-stack-edo .
 
 ### Building HaskDragon source
 
-Let us call **project directory** the one containing  **Application.hs**, the root of this repository
-
 From **project directory**
 
 ```bash
-./restore-docker-yaml   docker run \
-   -v `pwd`:/project  \
-   -v `pwd`/automation/docker-setup:/root/.stack \  
-   debian-stack-edo stack build --system-ghc  | grep "Installing executable(s) in" -B 2 -A 2
+./restore-docker-yaml  
+
+docker run
+   -v `pwd`:/project  
+   -v `pwd`/automation/docker-setup:/root/.stack
+   debian-stack-edo stack build --system-ghc
 ```
+
 
 We can break this command in parts:
 
@@ -48,3 +50,19 @@ We can break this command in parts:
 -  `stack build --system-ghc`  build using locally installed stack: on the guest system
 
 -  ` | grep "Installing executable(s) in"  -A 1 `  print directory in which is installed the binary
+
+possible output: [...]
+Installing executable(s) in
+/project/.stack-work/install/x86_64-linux/ghc-8.0.1/8.0.1/bin
+so
+**projectDir**/.stack-work/install/x86_64-linux/ghc-8.0.1/8.0.1/bin  
+is where the exe haskdragon-exe is stored
+
+### Creation of docker image running the App
+
+From **projectDir**
+
+```cp .stack-work/install/x86_64-linux/ghc-8.0.1/8.0.1/bin/haskdragon-exe  automation/deploy
+   cd automation/deploy
+   docker build -t haskdragon001 .      
+```

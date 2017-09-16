@@ -1,7 +1,8 @@
 FROM debian:latest
 
 #
-# run a single command to configure the image
+# create project dir,
+# install stack and haskell-platform, used to compile a project with system-ghc
 #
 RUN DEBIAN_FRONTEND=noninteractive \
     && mkdir /project \

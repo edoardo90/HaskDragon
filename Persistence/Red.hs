@@ -12,9 +12,11 @@ import qualified Database.Redis as DB
 import Control.Monad.Trans
 import Data.Maybe (fromJust, fromMaybe, isNothing, isJust)
 import Data.Either (isRight, isLeft)
+
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Char8 as BS8
+import qualified System.Environment as E
 
 import Data.Aeson
 import Model.GameMap (Map, Board)
@@ -93,7 +95,8 @@ addSphereToPlayer' playerName team conn = do
 
 connectRedisAnd :: (DB.Connection -> IO (Maybe a)) -> IO (Maybe a)
 connectRedisAnd action = do
-  conn <- DB.connect DB.defaultConnectInfo
+  redisHost <- readRedisHostFromEnv
+  conn <- DB.connect (DB.defaultConnectInfo {DB.connectHost = redisHost})
   connAlive <- DB.runRedis conn DB.ping
   if isLeft connAlive then
     return Nothing
@@ -101,6 +104,16 @@ connectRedisAnd action = do
     action conn
 
 createTeamName team = BS.append "players-" team
+
+
+readRedisHostFromEnv :: IO String
+readRedisHostFromEnv = do
+  maybeHost <- E.lookupEnv "REDIS_HOST"
+  return $ envHostOrLocal maybeHost
+
+envHostOrLocal :: Maybe String -> String
+envHostOrLocal Nothing = "localhost"
+envHostOrLocal (Just h) = h
 
 lazyToStrictBS :: LBS.ByteString -> BS.ByteString
 lazyToStrictBS x = BS.concat $ LBS.toChunks x
