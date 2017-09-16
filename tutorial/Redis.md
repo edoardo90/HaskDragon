@@ -1,6 +1,6 @@
 Create src/Persistence/Red.hs
 
-### Dev op part
+### Config part
 
 Edit cabal file
 
